@@ -1,12 +1,14 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from flask_cors import CORS
 from marshmallow import fields, validate
 from marshmallow import ValidationError
 from password import my_password
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://root:{my_password}@localhost/e_commerce_db'
+CORS(app)
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
@@ -93,6 +95,11 @@ def add_customer():
     db.session.add(new_customer)
     db.session.commit()
     return jsonify({"message": "New customer added successfully"}), 201
+
+@app.route('/customers/<int:id>', methods=['GET'])
+def get_customer_by_id(id):
+    customer = Customer.query.get_or_404(id)
+    return customer_schema.jsonify(customer)
 
 @app.route('/customers/<int:id>', methods=['PUT'])
 def update_customer(id):
